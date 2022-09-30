@@ -25,7 +25,13 @@ contract Staker {
   uint256 public withdrawalDeadline = block.timestamp + 120 seconds;
   uint256 public claimDeadline = block.timestamp + 240 seconds;
   uint256 public currentBlock= 0;
+  uint256 public threshold;
 
+
+  constructor(address exampleExternalContractAddress) {
+      exampleExternalContract = ExampleExternalContract(exampleExternalContractAddress);
+      threshold = 20 ether;
+  }
 
   //Modifiers
   modifier withdrawalDeadlineReached(bool requireReached){
@@ -48,14 +54,14 @@ contract Staker {
     _;
   }
 
+  modifier thresholdNotMet (){
+    require(threshold <= 20 ether);
+  }
+
   modifier notCompleted(){
     bool completed = exampleExternalContract.completed();
     require(!completed, "Stake already completed!");
     _;
-  }
-
-  constructor(address exampleExternalContractAddress) {
-      exampleExternalContract = ExampleExternalContract(exampleExternalContractAddress);
   }
 
 
@@ -115,8 +121,18 @@ contract Staker {
 
   // If the `threshold` was not met, allow everyone to call a `withdraw()` function to withdraw their balance
 
+  function thresholdNotMetWithdraw() public thresholdNotMet withdrawalDeadlineReached(true){
+    require(balance[msg.sender > 0]);
+    uint256 individualBalance = balance[msg.sender];
+    individualBalance.transfer(msg.sender);
+  }
+
 
   // Add a `timeLeft()` view function that returns the time left before the deadline for the frontend
+
+  function timeLeft() public view returns (){
+    return claimDeadline - block.timestamp;
+  }
 
 
   // Add the `receive()` special function that receives eth and calls stake()
