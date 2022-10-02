@@ -56,6 +56,7 @@ contract Staker {
 
   modifier thresholdNotMet (){
     require(threshold <= 20 ether);
+    _;
   }
 
   modifier notCompleted(){
